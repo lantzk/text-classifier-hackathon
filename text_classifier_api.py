@@ -2,10 +2,12 @@ import httpx
 import os
 import logging
 from pydantic import BaseModel
+# from openai import OpenAI
+
 from fastapi import HTTPException
 
-GROQ_API_KEY = os.getenv("GROQ_API_KEY")
-GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions"
+OPEN_AI_API_KEY = os.getenv("OPEN_AI_API_KEY")
+LLM_URL = "https://api.openai.com/v1/chat/completions"
 
 class TextInput(BaseModel):
     text: str
@@ -37,13 +39,13 @@ Provide only the scores as two float numbers separated by a comma, without any a
     try:
         async with httpx.AsyncClient() as client:
             response = await client.post(
-                GROQ_API_URL,
+                LLM_URL,
                 headers={
-                    "Authorization": f"Bearer {GROQ_API_KEY}",
+                    "Authorization": f"Bearer {OPEN_AI_API_KEY}",
                     "Content-Type": "application/json"
                 },
                 json={
-                    "model": "llama-3.1-70b-versatile",
+                    "model": "gpt-4o",
                     "messages": [{"role": "user", "content": prompt}],
                     "temperature": 0.2
                 },
