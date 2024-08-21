@@ -63,7 +63,7 @@ If you prefer to set up the project manually, follow these steps:
 3. Run the backend using Uvicorn:
 
    ```
-   uvicorn main:app --reload
+   uvicorn app:app --reload
    ```
 
    The API will be available at `http://localhost:8000`.
