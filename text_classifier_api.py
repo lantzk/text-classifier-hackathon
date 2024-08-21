@@ -3,9 +3,8 @@ import os
 from dotenv import load_dotenv
 import logging
 from pydantic import BaseModel
-# from openai import OpenAI
-
 from fastapi import HTTPException
+import re
 
 load_dotenv()
 
@@ -18,6 +17,8 @@ class TextInput(BaseModel):
 class ClassificationResult(BaseModel):
     factuality_score: float
     bias_score: float
+    additional_info: str
+    further_reading: list[dict[str, str]]
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
@@ -60,10 +61,10 @@ Ensure that the scores are provided as specified above, with each score on its o
                     "messages": [{"role": "user", "content": prompt}],
                     "temperature": 0.2
                 },
-                timeout=30.0  # Add a timeout
+                timeout=30.0
             )
         
-        response.raise_for_status()  # Raise an exception for non-200 status codes
+        response.raise_for_status()
     except httpx.RequestError as e:
         logger.error(f"Error making request to ChatGPT API: {str(e)}")
         raise HTTPException(status_code=500, detail="Error connecting to ChatGPT API")
@@ -77,39 +78,35 @@ Ensure that the scores are provided as specified above, with each score on its o
         
         logger.info(f"Raw API response content: {content}")
         
-        # Split the content into lines
-        lines = content.split('\n')
+        # Extract scores
+        factuality_score = float(re.search(r'Factuality score.*?:\s*([\d.]+)', content, re.IGNORECASE).group(1))
+        bias_score = float(re.search(r'Bias score.*?:\s*([\d.]+)', content, re.IGNORECASE).group(1))
         
-        factuality_score = None
-        bias_score = None
+        # Extract additional information (everything before the scores)
+        additional_info = content.split("Factuality score")[0].strip()
         
-        for line in lines:
-            line = line.strip().lower()
-            if 'factuality score' in line:
-                try:
-                    factuality_score = float(line.split(':')[-1].strip())
-                except ValueError:
-                    logger.warning(f"Failed to parse factuality score from: {line}")
-            elif 'bias score' in line:
-                try:
-                    bias_score = float(line.split(':')[-1].strip())
-                except ValueError:
-                    logger.warning(f"Failed to parse bias score from: {line}")
-        
-        if factuality_score is None or bias_score is None:
-            logger.warning("Failed to extract scores from API response")
-            factuality_score = factuality_score or 0.5
-            bias_score = bias_score or 0.5
-        
-        logger.info(f"Extracted scores - Factuality: {factuality_score}, Bias: {bias_score}")
+        # Extract further reading
+        further_reading = []
+        for match in re.finditer(r'Recommended further reading:\s*\[([^\]]+)\]\(([^)]+)\)', content):
+            further_reading.append({
+                "title": match.group(1),
+                "url": match.group(2)
+            })
         
         classification_result = ClassificationResult(
             factuality_score=factuality_score,
-            bias_score=bias_score
+            bias_score=bias_score,
+            additional_info=additional_info,
+            further_reading=further_reading
         )
         
         logger.info(f"Classification complete. Factuality: {classification_result.factuality_score}, Bias: {classification_result.bias_score}")
         return classification_result
     except Exception as e:
         logger.error(f"Error processing API response: {str(e)}")
-        return ClassificationResult(factuality_score=0.5, bias_score=0.5)
+        return ClassificationResult(
+            factuality_score=0.5, 
+            bias_score=0.5, 
+            additional_info="Error processing response", 
+            further_reading=[]
+        )

@@ -26,7 +26,11 @@ app.add_middleware(
 @app.post("/classify", response_class=HTMLResponse)
 async def classify_text_endpoint(request: Request, claim: Annotated[str, Form()]):
     result = await classify_text(claim)
-    return templates.TemplateResponse("result.html", {"request": request, "result": result, "claim": claim})
+    return templates.TemplateResponse("result.html", {
+        "request": request, 
+        "result": result, 
+        "claim": claim
+    })
 
 @app.get("/", response_class=HTMLResponse)
 async def root(request: Request):
