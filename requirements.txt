@@ -1,7 +1,6 @@
 fastapi
 uvicorn
 pydantic
-torch
 httpx
 groq
 python-dotenv
