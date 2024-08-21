@@ -20,16 +20,16 @@ class ClassificationResult(BaseModel):
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-async def classify_text(input_data: TextInput) -> ClassificationResult:
-    if not input_data.text:
+async def classify_text(input_data: str) -> ClassificationResult:
+    if not input_data:
         logger.warning("Empty text input received")
         raise HTTPException(status_code=400, detail="Please provide some text to classify.")
     
-    logger.info(f"Classifying text: {input_data.text[:50]}...")  # Log first 50 characters
+    logger.info(f"Classifying text: {input_data[:50]}...")  # Log first 50 characters
 
     prompt = f"""Analyze the following text and provide scores for factuality and bias on a scale of 0 to 1:
 
-Text: {input_data.text}
+Text: {input_data}
 
 Factuality score (0 = completely false, 1 = completely factual):
 Bias score (0 = completely unbiased, 1 = extremely biased):
