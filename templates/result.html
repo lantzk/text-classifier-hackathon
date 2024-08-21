@@ -29,25 +29,58 @@
             border-radius: 5px;
             margin-bottom: 20px;
         }
-        .results {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 20px;
-        }
-        .result-item {
-            flex-basis: 48%;
-            background-color: #e8f4fd;
-            padding: 15px;
-            border-radius: 5px;
-        }
-        .interpretation, .additional-info {
+        .claim-box {
             background-color: #f9f9f9;
-            padding: 15px;
+            padding: 20px;
             border-radius: 5px;
             margin-bottom: 20px;
+            border-left: 5px solid #3498db;
         }
-        .additional-info p {
-            margin-bottom: 15px;
+        .claim-header {
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #2c3e50;
+        }
+        .claim-content {
+            margin-left: 20px;
+        }
+        .true {
+            color: #27ae60;
+        }
+        .false {
+            color: #c0392b;
+        }
+        .evaluation-item {
+            background-color: #f9f9f9;
+            padding: 20px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            border-left: 5px solid #3498db;
+        }
+        .evaluation-header {
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #2c3e50;
+        }
+        .evaluation-content {
+            margin-left: 20px;
+        }
+        .score-bar {
+            background-color: #ecf0f1;
+            height: 20px;
+            border-radius: 10px;
+            margin-top: 5px;
+        }
+        .score-fill {
+            height: 100%;
+            border-radius: 10px;
+            transition: width 0.5s ease-in-out;
+        }
+        .factuality-fill {
+            background-color: #2ecc71;
+        }
+        .bias-fill {
+            background-color: #e74c3c;
         }
         .further-reading {
             margin-top: 20px;
@@ -76,44 +109,56 @@
 <body>
     <div class="container">
         <h1>Classification Result</h1>
-        <h2>Claim:</h2>
+        <h2>Original Claim:</h2>
         <div class="claim">{{ claim }}</div>
-        <h2>Results:</h2>
-        <div class="results">
-            <div class="result-item">
-                <strong>Factuality Score:</strong> {{ "{:.2f}".format(result.factuality_score) }}
+        
+        <div class="evaluation-item">
+            <div class="evaluation-header">Factuality Score: {{ "{:.2f}".format(result.factuality_score) }}</div>
+            <div class="evaluation-content">
+                <div class="score-bar">
+                    <div class="score-fill factuality-fill" style="width: {{ result.factuality_score * 100 }}%;"></div>
+                </div>
+                <p>This claim appears to be {% if result.factuality_score > 0.5 %}mostly factual{% else %}potentially misleading{% endif %}.</p>
             </div>
-            <div class="result-item">
-                <strong>Bias Score:</strong> {{ "{:.2f}".format(result.bias_score) }}
+        </div>
+
+        <div class="evaluation-item">
+            <div class="evaluation-header">Bias Score: {{ "{:.2f}".format(result.bias_score) }}</div>
+            <div class="evaluation-content">
+                <div class="score-bar">
+                    <div class="score-fill bias-fill" style="width: {{ result.bias_score * 100 }}%;"></div>
+                </div>
+                <p>This claim {% if result.bias_score > 0.5 %}shows signs of bias{% else %}is relatively unbiased{% endif %}.</p>
             </div>
         </div>
-        <h2>Interpretation:</h2>
-        <div class="interpretation">
-            <p>
-                Factuality: {% if result.factuality_score > 0.5 %}High{% else %}Low{% endif %}<br>
-                Bias: {% if result.bias_score > 0.5 %}High{% else %}Low{% endif %}
-            </p>
-            <p>
-                This claim appears to be 
-                {% if result.factuality_score > 0.5 %}mostly factual{% else %}potentially misleading{% endif %}
-                and 
-                {% if result.bias_score > 0.5 %}shows signs of bias{% else %}relatively unbiased{% endif %}.
-            </p>
+
+        <h2>Claim Analysis:</h2>
+        {% for claim in result.claims %}
+            <div class="claim-box">
+                <div class="claim-header">
+                    Claim {{ loop.index }}: <span class="{{ claim.truth_value.lower() }}">{{ claim.truth_value }}</span>
+                </div>
+                <div class="claim-content">
+                    <p><strong>Category:</strong> {{ claim.category }}</p>
+                    <p><strong>Explanation:</strong> {{ claim.explanation }}</p>
+                    <p><strong>Source:</strong> {{ claim.source }}</p>
+                </div>
+            </div>
+        {% endfor %}
+
+        <div class="evaluation-item">
+            <div class="evaluation-header">Further Reading:</div>
+            <div class="evaluation-content">
+                <div class="further-reading">
+                    <ul>
+                        {% for reading in result.further_reading %}
+                            <li><a href="{{ reading.url }}" target="_blank">{{ reading.title }}</a></li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
         </div>
-        <h2>Additional Information:</h2>
-        <div class="additional-info">
-            {% for paragraph in result.additional_info.split('\n\n') %}
-                <p>{{ paragraph | safe }}</p>
-            {% endfor %}
-        </div>
-        <div class="further-reading">
-            <h2>Further Reading:</h2>
-            <ul>
-                {% for reading in result.further_reading %}
-                    <li><a href="{{ reading.url }}" target="_blank">{{ reading.title }}</a></li>
-                {% endfor %}
-            </ul>
-        </div>
+
         <a href="/" class="button">Classify Another Claim</a>
     </div>
 </body>

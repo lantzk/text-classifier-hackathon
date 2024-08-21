@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from dotenv import load_dotenv
-from text_classifier_api import TextInput, ClassificationResult, classify_text
+from text_classifier_api import ClassificationResult, classify_text
 from typing import Annotated
 import os
 

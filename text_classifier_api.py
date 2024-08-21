@@ -12,14 +12,17 @@ load_dotenv()
 OPEN_AI_API_KEY = os.getenv("OPEN_AI_API_KEY")
 LLM_URL = "https://api.openai.com/v1/chat/completions"
 
-class TextInput(BaseModel):
-    text: str
+class Claim(BaseModel):
+    truth_value: str
+    category: str
+    explanation: str
+    source: str
 
 class ClassificationResult(BaseModel):
     factuality_score: float
     bias_score: float
-    additional_info: str
-    further_reading: list[dict[str, str]]
+    claims: List[Claim]
+    further_reading: List[Dict[str, str]]
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
@@ -83,8 +86,8 @@ Ensure that the scores are provided as specified above, with each score on its o
         factuality_score = float(re.search(r'Factuality score.*?:\s*([\d.]+)', content, re.IGNORECASE).group(1))
         bias_score = float(re.search(r'Bias score.*?:\s*([\d.]+)', content, re.IGNORECASE).group(1))
         
-        # Process additional information
-        additional_info = process_additional_info(content)
+        # Process claims
+        claims = process_claims(content)
         
         # Extract further reading
         further_reading = extract_further_reading(content)
@@ -92,7 +95,7 @@ Ensure that the scores are provided as specified above, with each score on its o
         classification_result = ClassificationResult(
             factuality_score=factuality_score,
             bias_score=bias_score,
-            additional_info=additional_info,
+            claims=claims,
             further_reading=further_reading
         )
         
@@ -103,31 +106,23 @@ Ensure that the scores are provided as specified above, with each score on its o
         return ClassificationResult(
             factuality_score=0.5, 
             bias_score=0.5, 
-            additional_info="Error processing response", 
+            claims=[],
             further_reading=[]
         )
 
-def process_additional_info(content: str) -> str:
-    # Split content into lines
-    lines = content.split('\n')
+def process_claims(content: str) -> List[Claim]:
+    claims = []
+    claim_pattern = re.compile(r'(\d+)\.\s*(TRUE|FALSE)\s*\n(\d+)\.\s*Category:\s*(.*?)\s*\n(\d+)\.\s*Explanation:\s*(.*?)\s*\n(\d+)\.\s*Credible source reference:\s*(.*?)\s*\n', re.DOTALL)
     
-    # Initialize variables
-    processed_info = []
-    current_paragraph = []
+    for match in claim_pattern.finditer(content):
+        claims.append(Claim(
+            truth_value=match.group(2),
+            category=match.group(4),
+            explanation=match.group(6).strip(),
+            source=match.group(8)
+        ))
     
-    for line in lines:
-        if line.strip().startswith(('Factuality score', 'Bias score')):
-            break
-        if re.match(r'^\d+\.', line.strip()):
-            if current_paragraph:
-                processed_info.append(' '.join(current_paragraph))
-                current_paragraph = []
-        current_paragraph.append(line.strip())
-    
-    if current_paragraph:
-        processed_info.append(' '.join(current_paragraph))
-    
-    return '\n\n'.join(processed_info)
+    return claims
 
 def extract_further_reading(content: str) -> List[Dict[str, str]]:
     further_reading = []
