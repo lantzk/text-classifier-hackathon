@@ -46,6 +46,28 @@ If you prefer to set up the project manually, follow these steps:
 
 3. The API will be available at `http://localhost:8000`.
 
+### Backend Setup (without Docker)
+
+1. Navigate to the backend directory:
+
+   ```
+   cd text-classifier-api
+   ```
+
+2. Install the dependencies:
+
+   ```
+   pip install -r requirements.txt
+   ```
+
+3. Run the backend using Uvicorn:
+
+   ```
+   uvicorn main:app --reload
+   ```
+
+   The API will be available at `http://localhost:8000`.
+
 ### Frontend Setup and Installation
 
 1. Navigate to the frontend directory:
@@ -90,6 +112,15 @@ To run both the backend and frontend together:
    ```
 
 3. The API will be available at `http://localhost:8000` and the frontend at `http://localhost:3000`.
+
+## API Documentation
+
+You can access the FastAPI auto-generated documentation by visiting:
+
+- Swagger UI: `http://localhost:8000/docs`
+- ReDoc: `http://localhost:8000/redoc`
+
+These interactive documentation pages provide detailed information about all available endpoints, request/response models, and allow you to test the API directly from your browser.
 
 ## API Endpoints
 
