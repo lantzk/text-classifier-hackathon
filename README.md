@@ -2,7 +2,39 @@
 
 This project is a text classification API using FastAPI and a pre-trained sentiment analysis model, along with a Vue.js frontend.
 
-## Docker Setup
+## First-Time Setup
+
+For first-time setup, we provide a convenient script that sets up both the backend and frontend:
+
+1. Make sure you have Docker, Docker Compose, and Node.js installed on your system.
+
+2. Run the setup script:
+
+   ```
+   chmod +x setup.sh
+   ./setup.sh
+   ```
+
+   This script will:
+   - Check for required dependencies
+   - Build and start the Docker containers for the backend
+   - Install frontend dependencies
+
+3. After the script completes, the backend API will be available at `http://localhost:8000`.
+
+4. To start the frontend development server, run:
+
+   ```
+   cd text-classifier-front-end && npm run dev
+   ```
+
+   The frontend will be available at `http://localhost:3000`.
+
+## Manual Setup
+
+If you prefer to set up the project manually, follow these steps:
+
+### Docker Setup
 
 1. Make sure you have Docker and Docker Compose installed on your system.
 
@@ -14,7 +46,7 @@ This project is a text classification API using FastAPI and a pre-trained sentim
 
 3. The API will be available at `http://localhost:8000`.
 
-## Frontend Setup and Installation
+### Frontend Setup and Installation
 
 1. Navigate to the frontend directory:
 
