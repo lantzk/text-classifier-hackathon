@@ -1,9 +1,15 @@
 <script setup lang="ts">
   import { ref, type Ref } from 'vue'
   import axios from 'axios'
+  import { useAppStore } from '../stores/app'
+  import { useRouter } from 'vue-router'
+
+  const router = useRouter()
 
   const loading: Ref<boolean> = ref(false)
   const errors: Ref<string[]> = ref([])
+  const content: Ref<string> = ref('')
+  const store = useAppStore()
 
   const analyzeText = async () => {
     loading.value = true
@@ -11,12 +17,16 @@
 
     try {
       const result = await axios.post(
-        'http://localhost:8000',
-        {},
+        'http://localhost:8000/classify',
+        {
+          text: content.value,
+        },
         {}
       )
 
-      console.log(result)
+      store.setResults(result.data)
+      await router.push({ path: '/output' })
+
       loading.value = false
     } catch (error) {
       console.log(error)
@@ -57,11 +67,11 @@
       <v-row>
         <v-col>
           <v-textarea
+            v-model="content"
             class="mt-4"
             clear-icon="mdi-close-circle"
             clearable
             label="Content"
-            model-value=""
           />
         </v-col>
       </v-row>
