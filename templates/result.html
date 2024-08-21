@@ -74,15 +74,24 @@
         <h2>Results:</h2>
         <div class="results">
             <div class="result-item">
-                <strong>Factuality:</strong> {{ result.factuality }}
+                <strong>Factuality Score:</strong> {{ "{:.2f}".format(result.factuality_score) }}
             </div>
             <div class="result-item">
-                <strong>Bias:</strong> {{ result.bias }}
+                <strong>Bias Score:</strong> {{ "{:.2f}".format(result.bias_score) }}
             </div>
         </div>
-        <h2>Explanation:</h2>
+        <h2>Interpretation:</h2>
         <div class="explanation">
-            <p>{{ result.explanation }}</p>
+            <p>
+                Factuality: {% if result.factuality_score > 0.5 %}High{% else %}Low{% endif %}<br>
+                Bias: {% if result.bias_score > 0.5 %}High{% else %}Low{% endif %}
+            </p>
+            <p>
+                This claim appears to be 
+                {% if result.factuality_score > 0.5 %}mostly factual{% else %}potentially misleading{% endif %}
+                and 
+                {% if result.bias_score > 0.5 %}shows signs of bias{% else %}relatively unbiased{% endif %}.
+            </p>
         </div>
         <a href="/" class="button">Classify Another Claim</a>
     </div>

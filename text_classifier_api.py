@@ -75,28 +75,31 @@ Ensure that the scores are provided as specified above, with each score on its o
         result = response.json()
         content = result['choices'][0]['message']['content'].strip()
         
-        logger.info(f"Raw API response content: {content}")  # Log the entire content
+        logger.info(f"Raw API response content: {content}")
         
         # Split the content into lines
         lines = content.split('\n')
         
-        # Initialize variables to store factuality and bias scores
-        factuality_score = 0.5  # Default to neutral scores
-        bias_score = 0.5
+        factuality_score = None
+        bias_score = None
         
-        # Look for the scores in the last lines of the content
-        for line in reversed(lines):
-            if 'Factuality score:' in line or 'Bias score:' in line:
+        for line in lines:
+            line = line.strip().lower()
+            if 'factuality score' in line:
                 try:
-                    score_parts = line.split(':')
-                    if len(score_parts) >= 2:
-                        score = float(score_parts[1].strip())
-                        if 'Factuality score' in line:
-                            factuality_score = score
-                        elif 'Bias score' in line:
-                            bias_score = score
-                except ValueError as e:
-                    logger.warning(f"Failed to parse score from: {line}. Error: {str(e)}")
+                    factuality_score = float(line.split(':')[-1].strip())
+                except ValueError:
+                    logger.warning(f"Failed to parse factuality score from: {line}")
+            elif 'bias score' in line:
+                try:
+                    bias_score = float(line.split(':')[-1].strip())
+                except ValueError:
+                    logger.warning(f"Failed to parse bias score from: {line}")
+        
+        if factuality_score is None or bias_score is None:
+            logger.warning("Failed to extract scores from API response")
+            factuality_score = factuality_score or 0.5
+            bias_score = bias_score or 0.5
         
         logger.info(f"Extracted scores - Factuality: {factuality_score}, Bias: {bias_score}")
         
@@ -109,5 +112,4 @@ Ensure that the scores are provided as specified above, with each score on its o
         return classification_result
     except Exception as e:
         logger.error(f"Error processing API response: {str(e)}")
-        # Return default scores if there's any error
         return ClassificationResult(factuality_score=0.5, bias_score=0.5)
