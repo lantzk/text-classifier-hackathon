@@ -54,11 +54,11 @@ Provide only the scores as two float numbers separated by a comma, without any a
         
         response.raise_for_status()  # Raise an exception for non-200 status codes
     except httpx.RequestError as e:
-        logger.error(f"Error making request to Groq API: {str(e)}")
-        raise HTTPException(status_code=500, detail="Error connecting to Groq API")
+        logger.error(f"Error making request to ChatGPT API: {str(e)}")
+        raise HTTPException(status_code=500, detail="Error connecting to ChatGPT API")
     except httpx.HTTPStatusError as e:
-        logger.error(f"Groq API returned error status: {e.response.status_code}")
-        raise HTTPException(status_code=500, detail=f"Groq API error: {e.response.text}")
+        logger.error(f"ChatGPT API returned error status: {e.response.status_code}")
+        raise HTTPException(status_code=500, detail=f"ChatGPT API error: {e.response.text}")
 
     try:
         result = response.json()
@@ -74,5 +74,5 @@ Provide only the scores as two float numbers separated by a comma, without any a
         logger.info(f"Classification complete. Factuality: {classification_result.factuality_score}, Bias: {classification_result.bias_score}")
         return classification_result
     except (KeyError, IndexError, ValueError) as e:
-        logger.error(f"Error parsing Groq API response: {str(e)}")
-        raise HTTPException(status_code=500, detail="Error parsing Groq API response")
+        logger.error(f"Error parsing ChatGPT API response: {str(e)}")
+        raise HTTPException(status_code=500, detail="Error parsing ChatGPT API response")
