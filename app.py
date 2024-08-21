@@ -1,27 +1,37 @@
-import streamlit as st
+from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel
 from transformers import pipeline
 
 # Set up the sentiment analysis pipeline
 classifier = pipeline("sentiment-analysis")
 
-# Set up the Streamlit app
-st.title("Text Classification Bot")
+# Create FastAPI app
+app = FastAPI(title="Text Classification API")
 
-# User input
-user_input = st.text_area("Enter the text you want to classify:", height=100)
+class TextInput(BaseModel):
+    text: str
 
-if st.button("Classify"):
-    if user_input:
-        # Perform classification
-        result = classifier(user_input)[0]
-        
-        # Display results
-        st.subheader("Classification Result:")
-        st.write(f"Label: {result['label']}")
-        st.write(f"Confidence: {result['score']:.4f}")
-    else:
-        st.warning("Please enter some text to classify.")
+class ClassificationResult(BaseModel):
+    label: str
+    confidence: float
 
-# Add some information about the model
-st.sidebar.header("About")
-st.sidebar.info("This is a simple text classification bot using a pre-trained sentiment analysis model. You can replace it with your own text classification model for different tasks.")
+@app.post("/classify", response_model=ClassificationResult)
+async def classify_text(input_data: TextInput):
+    if not input_data.text:
+        raise HTTPException(status_code=400, detail="Please provide some text to classify.")
+    
+    # Perform classification
+    result = classifier(input_data.text)[0]
+    
+    return ClassificationResult(label=result['label'], confidence=result['score'])
+
+@app.get("/")
+async def root():
+    return {"message": "Welcome to the Text Classification API"}
+
+# Add some information about the API
+@app.get("/about")
+async def about():
+    return {
+        "info": "This is a simple text classification API using a pre-trained sentiment analysis model. You can replace it with your own text classification model for different tasks."
+    }

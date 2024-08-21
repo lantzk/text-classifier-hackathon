@@ -1,14 +1,14 @@
-# text-classifier-hackathon
+# text-classifier-api
 
-This project is a text classification application using Streamlit and a pre-trained sentiment analysis model.
+This project is a text classification API using FastAPI and a pre-trained sentiment analysis model.
 
 ## Setup and Installation
 
 1. Clone the repository:
 
    ```
-   git clone https://github.com/your-username/text-classifier-hackathon.git
-   cd text-classifier-hackathon
+   git clone https://github.com/your-username/text-classifier-api.git
+   cd text-classifier-api
    ```
 
 2. Create a virtual environment:
@@ -38,7 +38,7 @@ This project is a text classification application using Streamlit and a pre-trai
 
 ## Running the Application
 
-To run the Streamlit app, use the following command:
+To run the FastAPI app, use the following command:
 
 ```
-streamlit run app.py
+uvicorn text_classifier_api.app:app --reload
