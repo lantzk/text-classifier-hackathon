@@ -2,55 +2,17 @@
 
 This project is a text classification API using FastAPI and a pre-trained sentiment analysis model, along with a Vue.js frontend.
 
-## Backend Setup and Installation
+## Docker Setup
 
-1. Clone the repository:
+1. Make sure you have Docker and Docker Compose installed on your system.
 
-   ```
-   git clone https://github.com/your-username/text-classifier-api.git
-   cd text-classifier-api
-   ```
-
-2. Create a virtual environment:
+2. Build and run the Docker containers:
 
    ```
-   python -m venv venv
+   docker-compose up --build
    ```
 
-3. Activate the virtual environment:
-   - On Windows:
-
-     ```
-     venv\Scripts\activate
-     ```
-
-   - On macOS and Linux:
-
-     ```
-     source venv/bin/activate
-     ```
-
-4. Install the required dependencies:
-
-   ```
-   pip install -r requirements.txt
-   ```
-
-5. Create a `.env` file in the root directory and add your Groq API key:
-
-   ```
-   GROQ_API_KEY=your_groq_api_key_here
-   ```
-
-## Running the Backend Application
-
-To run the FastAPI app, use the following command:
-
-```
-uvicorn app:app --reload
-```
-
-The API will be available at `http://localhost:8000`.
+3. The API will be available at `http://localhost:8000`.
 
 ## Frontend Setup and Installation
 
@@ -84,6 +46,19 @@ pnpm dev
 
 The frontend will be available at `http://localhost:3000`.
 
+## Running the Full Stack
+
+To run both the backend and frontend together:
+
+1. Make sure you have Docker and Docker Compose installed.
+2. From the project root directory, run:
+
+   ```
+   docker-compose up --build
+   ```
+
+3. The API will be available at `http://localhost:8000` and the frontend at `http://localhost:3000`.
+
 ## API Endpoints
 
 - `GET /`: Welcome message
@@ -97,11 +72,17 @@ The frontend will be available at `http://localhost:3000`.
   - Pydantic
   - httpx
   - Groq API
+  - PostgreSQL
+  - Redis
+  - SQLAlchemy
 - Frontend:
   - Vue.js 3
   - Vuetify 3
   - TypeScript
   - Vite
+- Deployment:
+  - Docker
+  - Docker Compose
 
 ## License
 
