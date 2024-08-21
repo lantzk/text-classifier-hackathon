@@ -34,7 +34,7 @@ Provide only the scores as two float numbers separated by a comma, without any a
                 "Content-Type": "application/json"
             },
             json={
-                "model": "mixtral-8x7b-32768",
+                "model": "llama-3.1-70b-versatile",
                 "messages": [{"role": "user", "content": prompt}],
                 "temperature": 0.2
             }
