@@ -20,22 +20,14 @@
             padding: 30px;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
-        h1 {
+        h1, h2 {
             color: #2c3e50;
-            text-align: center;
-            margin-bottom: 30px;
-        }
-        h2 {
-            color: #3498db;
-            margin-top: 20px;
         }
         .claim {
             background-color: #ecf0f1;
             padding: 15px;
             border-radius: 5px;
-        }
-        .claim p {
-            margin: 0;
+            margin-bottom: 20px;
         }
         .results {
             display: flex;
@@ -48,11 +40,24 @@
             padding: 15px;
             border-radius: 5px;
         }
-        .explanation {
+        .interpretation, .additional-info {
             background-color: #f9f9f9;
             padding: 15px;
             border-radius: 5px;
             margin-bottom: 20px;
+        }
+        .additional-info p {
+            margin-bottom: 15px;
+        }
+        .further-reading {
+            margin-top: 20px;
+        }
+        .further-reading ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
+        .further-reading li {
+            margin-bottom: 10px;
         }
         .button {
             display: inline-block;
@@ -66,33 +71,13 @@
         .button:hover {
             background-color: #2980b9;
         }
-        .further-reading {
-            margin-top: 20px;
-        }
-        .further-reading h3 {
-            color: #3498db;
-        }
-        .further-reading ul {
-            list-style-type: none;
-            padding-left: 0;
-        }
-        .further-reading li {
-            margin-bottom: 10px;
-        }
-        .additional-info {
-            background-color: #f9f9f9;
-            padding: 15px;
-            border-radius: 5px;
-            margin-top: 20px;
-        }
     </style>
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 </head>
 <body>
     <div class="container">
         <h1>Classification Result</h1>
         <h2>Claim:</h2>
-        <div class="claim" id="claim-content"></div>
+        <div class="claim">{{ claim }}</div>
         <h2>Results:</h2>
         <div class="results">
             <div class="result-item">
@@ -103,7 +88,7 @@
             </div>
         </div>
         <h2>Interpretation:</h2>
-        <div class="explanation">
+        <div class="interpretation">
             <p>
                 Factuality: {% if result.factuality_score > 0.5 %}High{% else %}Low{% endif %}<br>
                 Bias: {% if result.bias_score > 0.5 %}High{% else %}Low{% endif %}
@@ -115,31 +100,21 @@
                 {% if result.bias_score > 0.5 %}shows signs of bias{% else %}relatively unbiased{% endif %}.
             </p>
         </div>
+        <h2>Additional Information:</h2>
         <div class="additional-info">
-            <h2>Additional Information:</h2>
-            <div id="additional-content"></div>
+            {% for paragraph in result.additional_info.split('\n\n') %}
+                <p>{{ paragraph | safe }}</p>
+            {% endfor %}
         </div>
         <div class="further-reading">
-            <h3>Further Reading:</h3>
-            <ul id="further-reading-list"></ul>
+            <h2>Further Reading:</h2>
+            <ul>
+                {% for reading in result.further_reading %}
+                    <li><a href="{{ reading.url }}" target="_blank">{{ reading.title }}</a></li>
+                {% endfor %}
+            </ul>
         </div>
         <a href="/" class="button">Classify Another Claim</a>
     </div>
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            var claimContent = `{{ claim | safe }}`;
-            document.getElementById('claim-content').innerHTML = marked.parse(claimContent);
-
-            var additionalContent = `{{ result.additional_info | safe }}`;
-            document.getElementById('additional-content').innerHTML = marked.parse(additionalContent);
-
-            var furtherReadingList = document.getElementById('further-reading-list');
-            {% for reading in result.further_reading %}
-                var li = document.createElement('li');
-                li.innerHTML = marked.parse(`[{{ reading.title }}]({{ reading.url }})`);
-                furtherReadingList.appendChild(li);
-            {% endfor %}
-        });
-    </script>
 </body>
 </html>

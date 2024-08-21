@@ -5,6 +5,7 @@ import logging
 from pydantic import BaseModel
 from fastapi import HTTPException
 import re
+from typing import List, Dict
 
 load_dotenv()
 
@@ -82,16 +83,11 @@ Ensure that the scores are provided as specified above, with each score on its o
         factuality_score = float(re.search(r'Factuality score.*?:\s*([\d.]+)', content, re.IGNORECASE).group(1))
         bias_score = float(re.search(r'Bias score.*?:\s*([\d.]+)', content, re.IGNORECASE).group(1))
         
-        # Extract additional information (everything before the scores)
-        additional_info = content.split("Factuality score")[0].strip()
+        # Process additional information
+        additional_info = process_additional_info(content)
         
         # Extract further reading
-        further_reading = []
-        for match in re.finditer(r'Recommended further reading:\s*\[([^\]]+)\]\(([^)]+)\)', content):
-            further_reading.append({
-                "title": match.group(1),
-                "url": match.group(2)
-            })
+        further_reading = extract_further_reading(content)
         
         classification_result = ClassificationResult(
             factuality_score=factuality_score,
@@ -110,3 +106,34 @@ Ensure that the scores are provided as specified above, with each score on its o
             additional_info="Error processing response", 
             further_reading=[]
         )
+
+def process_additional_info(content: str) -> str:
+    # Split content into lines
+    lines = content.split('\n')
+    
+    # Initialize variables
+    processed_info = []
+    current_paragraph = []
+    
+    for line in lines:
+        if line.strip().startswith(('Factuality score', 'Bias score')):
+            break
+        if re.match(r'^\d+\.', line.strip()):
+            if current_paragraph:
+                processed_info.append(' '.join(current_paragraph))
+                current_paragraph = []
+        current_paragraph.append(line.strip())
+    
+    if current_paragraph:
+        processed_info.append(' '.join(current_paragraph))
+    
+    return '\n\n'.join(processed_info)
+
+def extract_further_reading(content: str) -> List[Dict[str, str]]:
+    further_reading = []
+    for match in re.finditer(r'Recommended further reading:\s*\[([^\]]+)\]\(([^)]+)\)', content):
+        further_reading.append({
+            "title": match.group(1),
+            "url": match.group(2)
+        })
+    return further_reading
