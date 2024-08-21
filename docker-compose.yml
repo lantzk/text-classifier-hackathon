@@ -1,8 +1,10 @@
 version: '3.8'
 
 services:
-  web:
-    build: .
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
     ports:
       - "8000:8000"
     environment:
@@ -10,29 +12,60 @@ services:
       - REDIS_URL=redis://redis:6379/0
       - GROQ_API_KEY=${GROQ_API_KEY}
     depends_on:
-      - db
-      - redis
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - app_network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
   frontend:
-    build: ./text-classifier-front-end
+    build:
+      context: ./text-classifier-front-end
+      dockerfile: Dockerfile
     ports:
       - "3000:3000"
     environment:
-      - VITE_API_URL=http://web:8000
+      - VITE_API_URL=http://backend:8000
     depends_on:
-      - web
+      - backend
+    networks:
+      - app_network
 
   db:
-    image: postgres:latest
+    image: postgres:15-alpine
     environment:
       - POSTGRES_USER=user
       - POSTGRES_PASSWORD=password
       - POSTGRES_DB=text_classifier
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    networks:
+      - app_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user -d text_classifier"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   redis:
-    image: redis:6
+    image: redis:7-alpine
+    networks:
+      - app_network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+networks:
+  app_network:
+    driver: bridge
 
 volumes:
   postgres_data:
